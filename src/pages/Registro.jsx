@@ -24,44 +24,49 @@ function Registro() {
     })
     setError('')
   }
+const handleSubmit = async (e) => {
+  e.preventDefault()
+  setError('')
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
-    setError('')
-
-    // Validaciones
-    if (formData.contrasena !== formData.confirmarContrasena) {
-      setError('Las contraseñas no coinciden')
-      return
-    }
-
-    if (formData.contrasena.length < 6) {
-      setError('La contraseña debe tener al menos 6 caracteres')
-      return
-    }
-
-    setLoading(true)
-
-    try {
-      const { confirmarContrasena: _, ...dataToSend } = formData
-      
-      const response = await axios.post('http://localhost:8000/api/auth/registro', dataToSend)
-      
-      console.log('Usuario registrado:', response.data)
-      alert('¡Registro exitoso! Ahora puedes iniciar sesión')
-      navigate('/login')
-      
-    } catch (err) {
-      if (err.response && err.response.data && err.response.data.detail) {
-        setError(err.response.data.detail)
-      } else {
-        setError('Error al registrar usuario. Intenta de nuevo.')
-      }
-      console.error('Error:', err)
-    } finally {
-      setLoading(false)
-    }
+  // Validaciones
+  if (formData.contrasena !== formData.confirmarContrasena) {
+    setError('Las contraseñas no coinciden')
+    return
   }
+
+  if (formData.contrasena.length < 6) {
+    setError('La contraseña debe tener al menos 6 caracteres')
+    return
+  }
+
+  setLoading(true)
+
+  try {
+    const { confirmarContrasena: _, ...dataToSend } = formData
+    
+    const response = await axios.post('http://localhost:8000/api/auth/registro', dataToSend)
+    
+    console.log('Usuario registrado:', response.data)
+    
+    // Guardar datos del usuario en localStorage
+    localStorage.setItem('usuario', JSON.stringify(response.data))
+    
+    alert('¡Registro exitoso! Configura tus métodos de verificación')
+    
+    // Redirigir a verificaciones (CAMBIAR ESTA LÍNEA)
+    navigate('/verificaciones')
+    
+  } catch (err) {
+    if (err.response && err.response.data && err.response.data.detail) {
+      setError(err.response.data.detail)
+    } else {
+      setError('Error al registrar usuario. Intenta de nuevo.')
+    }
+    console.error('Error:', err)
+  } finally {
+    setLoading(false)
+  }
+}
 
   return (
     <div className="registro-container">
