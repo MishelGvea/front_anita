@@ -4,6 +4,7 @@ import Login from './pages/Login'
 import Registro from './pages/Registro'
 import Dashboard from './pages/Dashboard'
 import Verificaciones from './pages/Verificaciones'
+import ConfigurarTOTP from './pages/ConfigurarTOTP'
 
 function App() {
   return (
@@ -14,6 +15,7 @@ function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/verificaciones" element={<Verificaciones />} />
         <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/configurar-totp" element={<ConfigurarTOTP />} />  
       </Routes>
     </BrowserRouter>
   )

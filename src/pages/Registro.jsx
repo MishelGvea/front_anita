@@ -44,7 +44,8 @@ const handleSubmit = async (e) => {
   try {
     const { confirmarContrasena: _, ...dataToSend } = formData
     
-    const response = await axios.post('http://localhost:8000/api/auth/registro', dataToSend)
+    const response = await axios.post('http://127.0.0.1:8000/api/auth/registro', dataToSend)
+
     
     console.log('Usuario registrado:', response.data)
     

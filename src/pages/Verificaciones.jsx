@@ -12,6 +12,7 @@ function Verificaciones() {
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
   const [enviando, setEnviando] = useState(false)
+  const API_URL = 'http://127.0.0.1:8000'
 
   useEffect(() => {
     const usuarioData = localStorage.getItem('usuario')
@@ -22,17 +23,18 @@ function Verificaciones() {
     setUsuario(JSON.parse(usuarioData))
   }, [navigate])
 
+  // ====== 📱 FUNCIONES DE VERIFICACIÓN POR SMS ======
   const enviarCodigoSMS = async () => {
     setError('')
     setMensaje('')
     setEnviando(true)
     
     try {
-      const response = await axios.post('http://localhost:8000/api/verificacion/enviar-codigo-sms', {
+      const response = await axios.post(`${API_URL}/api/verificacion/enviar-codigo-sms`, {
         usuario_id: usuario.id
       })
       setMensaje(response.data.mensaje)
-      setCodigoPrueba(response.data.codigo_prueba) // Guardar código de prueba
+      setCodigoPrueba(response.data.codigo_prueba)
       setMetodoActual('sms')
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al enviar código')
@@ -51,22 +53,32 @@ function Verificaciones() {
     setMensaje('')
     
     try {
-      await axios.post('http://localhost:8000/api/verificacion/verificar-codigo-sms', {
+      await axios.post(`${API_URL}/api/verificacion/verificar-codigo-sms`, {
         usuario_id: usuario.id,
         codigo: codigo
       })
       
-      alert('Teléfono verificado exitosamente')
-      
+      alert('Teléfono verificado exitosamente ✅')
       const usuarioActualizado = { ...usuario, telefono_verificado: true }
       localStorage.setItem('usuario', JSON.stringify(usuarioActualizado))
       setUsuario(usuarioActualizado)
-      
       setMetodoActual(null)
       setCodigo('')
       setCodigoPrueba('')
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al verificar código')
+    }
+  }
+
+  // ====== 🔐 MÉTODO TOTP ======
+  const usarTOTP = () => {
+    if (usuario.totp_habilitado) {
+      // Si ya tiene activado el TOTP → simplemente navegar al login o verificación
+      alert('Abre tu app de autenticación y usa el código al iniciar sesión.')
+      navigate('/login')
+    } else {
+      // Si no tiene configurado → ir a configurar
+      navigate('/configurar-totp')
     }
   }
 
@@ -84,28 +96,28 @@ function Verificaciones() {
     <div className="verificaciones-container">
       <div className="verificaciones-card">
         <h1>Métodos de Verificación</h1>
-        <p className="subtitle">Configura tus métodos de autenticación multifactor</p>
+        <p className="subtitle">Selecciona o configura tus métodos de autenticación multifactor</p>
 
         <div className="metodos-grid">
+          {/* 📧 CÓDIGO A GMAIL */}
           <div className="metodo-card">
             <div className="metodo-icon">📧</div>
             <h3>Código a Gmail</h3>
             <p>Verificación por correo electrónico</p>
             <span className="badge multifactor">Multifactor</span>
-            {usuario.email_verificado ? (
-              <div className="verificado">✓ Verificado</div>
-            ) : (
-              <button className="btn-metodo" disabled>Próximamente</button>
-            )}
+            <button className="btn-metodo" disabled>Próximamente</button>
           </div>
 
+          {/* 📱 CÓDIGO POR SMS */}
           <div className="metodo-card">
             <div className="metodo-icon">📱</div>
             <h3>Código a Teléfono</h3>
             <p>Verificación por SMS</p>
             <span className="badge multifactor">Multifactor</span>
             {usuario.telefono_verificado ? (
-              <div className="verificado">✓ Verificado</div>
+              <button className="btn-metodo" onClick={() => alert('Tu teléfono ya está verificado ✅')}>
+                ✓ Verificado
+              </button>
             ) : (
               <button 
                 className="btn-metodo" 
@@ -117,18 +129,25 @@ function Verificaciones() {
             )}
           </div>
 
+          {/* 🔐 APP AUTENTICADORA */}
+          <div className="metodo-card">
+            <div className="metodo-icon">🔐</div>
+            <h3>App Autenticadora</h3>
+            <p>Google Authenticator, Authy, Microsoft Authenticator, etc.</p>
+            <span className="badge intermedio">Intermedio</span>
+            <button 
+              className="btn-metodo"
+              onClick={usarTOTP}
+            >
+              {usuario.totp_habilitado ? 'Usar App Autenticadora' : 'Configurar App'}
+            </button>
+          </div>
+
+          {/* ❓ PREGUNTA DE SEGURIDAD */}
           <div className="metodo-card">
             <div className="metodo-icon">❓</div>
             <h3>Pregunta de Seguridad</h3>
             <p>Responde una pregunta personal</p>
-            <span className="badge intermedio">Intermedio</span>
-            <button className="btn-metodo" disabled>Próximamente</button>
-          </div>
-
-          <div className="metodo-card">
-            <div className="metodo-icon">🔐</div>
-            <h3>App Autenticadora</h3>
-            <p>Google Authenticator, Authy, etc</p>
             <span className="badge intermedio">Intermedio</span>
             <button className="btn-metodo" disabled>Próximamente</button>
           </div>
@@ -138,22 +157,22 @@ function Verificaciones() {
         {error && !metodoActual && <div className="mensaje-error">{error}</div>}
 
         <button onClick={() => navigate('/dashboard')} className="btn-continuar">
-          Continuar al Dashboard
+          Ir al Dashboard
         </button>
       </div>
 
+      {/* 📦 MODAL SMS */}
       {metodoActual === 'sms' && (
         <div className="modal-overlay" onClick={cerrarModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Verificar Teléfono</h2>
             <p>Ingresa el código de 6 dígitos</p>
             
-            {/* MOSTRAR CÓDIGO DE PRUEBA */}
             {codigoPrueba && (
               <div className="codigo-prueba-box">
                 <p className="codigo-prueba-label">Código de prueba:</p>
                 <p className="codigo-prueba-valor">{codigoPrueba}</p>
-                <p className="codigo-prueba-nota">Este código también aparece en la consola del backend</p>
+                <p className="codigo-prueba-nota">*Solo visible en modo prueba*</p>
               </div>
             )}
             
