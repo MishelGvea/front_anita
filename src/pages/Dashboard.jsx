@@ -47,6 +47,14 @@ function Dashboard() {
         <div className="auth-status">
           <h2>Estado de Autenticación</h2>
           <ul>
+             <li>
+              📧 <strong>Verificación por Email (Gmail):</strong>{' '}
+              {usuario.email_verificado ? (
+                <span className="status success">✅ Verificado</span>
+              ) : (
+                <span className="status warning">⚠️ No verificado</span>
+              )}
+            </li>
             <li>
               📱 <strong>Verificación por SMS:</strong>{' '}
               {usuario.telefono_verificado ? (

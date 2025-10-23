@@ -11,6 +11,8 @@ function Login() {
   })
   const [codigoTOTP, setCodigoTOTP] = useState('')
   const [requiereTOTP, setRequiereTOTP] = useState(false)
+  const [esEmail, setEsEmail] = useState(false) // 📧 Nuevo: detectar si es email
+  const [mensajeInfo, setMensajeInfo] = useState('') // 📧 Nuevo: mensaje del backend
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -43,9 +45,15 @@ function Login() {
 
       const response = await axios.post('http://localhost:8000/api/auth/login', payload)
       
-      // Verificar si requiere TOTP
+      // Verificar si requiere TOTP o Email
       if (response.data.requiere_totp) {
         setRequiereTOTP(true)
+        setMensajeInfo(response.data.mensaje || '')
+        
+        // 📧 Detectar si es verificación por email
+        const mensaje = response.data.mensaje?.toLowerCase() || ''
+        setEsEmail(mensaje.includes('email') || mensaje.includes('correo') || mensaje.includes('@'))
+        
         setLoading(false)
         return
       }
@@ -75,6 +83,8 @@ function Login() {
   const handleVolver = () => {
     setRequiereTOTP(false)
     setCodigoTOTP('')
+    setEsEmail(false)
+    setMensajeInfo('')
     setError('')
   }
 
@@ -83,7 +93,10 @@ function Login() {
       <div className="login-card">
         <h1>Iniciar Sesión</h1>
         <p className="subtitle">
-          {requiereTOTP ? 'Autenticación de dos factores' : 'Ingresa tus credenciales'}
+          {requiereTOTP 
+            ? (esEmail ? 'Verificación por Email' : 'Autenticación de dos factores')
+            : 'Ingresa tus credenciales'
+          }
         </p>
 
         <form onSubmit={handleSubmit}>
@@ -117,12 +130,15 @@ function Login() {
             </>
           )}
 
-          {/* Campo TOTP (solo si es requerido) */}
+          {/* Campo TOTP o Email (solo si es requerido) */}
           {requiereTOTP && (
-            <div className="totp-section">
-              <div className="totp-info">
-                <span className="totp-icon">🔒</span>
-                <p>Ingresa el código de 6 dígitos de tu aplicación de autenticación</p>
+            <div className={esEmail ? "email-section" : "totp-section"}>
+              <div className={esEmail ? "email-info" : "totp-info"}>
+                <span className="totp-icon">{esEmail ? '📧' : '🔒'}</span>
+                <p>{mensajeInfo || (esEmail 
+                  ? 'Revisa tu correo electrónico' 
+                  : 'Ingresa el código de 6 dígitos de tu aplicación de autenticación')}
+                </p>
               </div>
               
               <div className="form-group">
@@ -138,9 +154,21 @@ function Login() {
                   required
                 />
                 <small className="help-text">
-                  Abre Google Authenticator o tu app de autenticación
+                  {esEmail 
+                    ? '📬 Revisa tu correo y copia el código de 6 dígitos'
+                    : '📱 Abre Google Authenticator o tu app de autenticación'
+                  }
                 </small>
               </div>
+
+              {/* 📧 Ayuda adicional para email */}
+              {esEmail && (
+                <div className="email-ayuda">
+                  <p className="texto-ayuda">
+                    💡 Si no ves el correo, revisa tu carpeta de <strong>spam</strong>
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -159,7 +187,7 @@ function Login() {
             }
           </button>
 
-          {/* Botón volver (solo en modo TOTP) */}
+          {/* Botón volver (solo en modo TOTP o Email) */}
           {requiereTOTP && (
             <button 
               type="button" 
