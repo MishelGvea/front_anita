@@ -28,7 +28,7 @@ function Verificaciones() {
     setError('')
     setMensaje('')
     setEnviando(true)
-    
+
     try {
       const response = await axios.post(`${API_URL}/api/verificacion/enviar-codigo-email`, {
         usuario_id: usuario.id
@@ -50,13 +50,13 @@ function Verificaciones() {
 
     setError('')
     setMensaje('')
-    
+
     try {
       await axios.post(`${API_URL}/api/verificacion/verificar-codigo-email`, {
         usuario_id: usuario.id,
         codigo: codigo
       })
-      
+
       alert('Email verificado exitosamente ✅')
       const usuarioActualizado = { ...usuario, email_verificado: true }
       localStorage.setItem('usuario', JSON.stringify(usuarioActualizado))
@@ -73,7 +73,7 @@ function Verificaciones() {
     setError('')
     setMensaje('')
     setEnviando(true)
-    
+
     try {
       const response = await axios.post(`${API_URL}/api/verificacion/enviar-codigo-sms`, {
         usuario_id: usuario.id
@@ -96,13 +96,13 @@ function Verificaciones() {
 
     setError('')
     setMensaje('')
-    
+
     try {
       await axios.post(`${API_URL}/api/verificacion/verificar-codigo-sms`, {
         usuario_id: usuario.id,
         codigo: codigo
       })
-      
+
       alert('Teléfono verificado exitosamente ✅')
       const usuarioActualizado = { ...usuario, telefono_verificado: true }
       localStorage.setItem('usuario', JSON.stringify(usuarioActualizado))
@@ -118,10 +118,10 @@ function Verificaciones() {
   // ====== 🔐 MÉTODO TOTP ======
   const usarTOTP = () => {
     if (usuario.totp_habilitado) {
-            // Si ya tiene activado el TOTP → simplemente navegar al login o verificación
+      // Si ya tiene activado el TOTP → simplemente navegar al login o verificación
       alert('Abre tu app de autenticación y usa el código al iniciar sesión.')
       navigate('/login')
-    } else {      
+    } else {
       // Si no tiene configurado → ir a configurar
       navigate('/configurar-totp')
     }
@@ -155,8 +155,8 @@ function Verificaciones() {
                 ✓ Verificado
               </button>
             ) : (
-              <button 
-                className="btn-metodo" 
+              <button
+                className="btn-metodo"
                 onClick={enviarCodigoEmail}
                 disabled={enviando}
               >
@@ -176,8 +176,8 @@ function Verificaciones() {
                 ✓ Verificado
               </button>
             ) : (
-              <button 
-                className="btn-metodo" 
+              <button
+                className="btn-metodo"
                 onClick={enviarCodigoSMS}
                 disabled={enviando}
               >
@@ -192,7 +192,7 @@ function Verificaciones() {
             <h3>App Autenticadora</h3>
             <p>Google Authenticator, Authy, Microsoft Authenticator, etc.</p>
             <span className="badge intermedio">Intermedio</span>
-            <button 
+            <button
               className="btn-metodo"
               onClick={usarTOTP}
             >
@@ -206,7 +206,21 @@ function Verificaciones() {
             <h3>Pregunta de Seguridad</h3>
             <p>Responde una pregunta personal</p>
             <span className="badge intermedio">Intermedio</span>
-            <button className="btn-metodo" disabled>Próximamente</button>
+            {usuario.pregunta_seguridad ? (
+              <button
+                className="btn-metodo"
+                onClick={() => alert('Ya tienes configurada tu pregunta de seguridad ✅')}
+              >
+                ✓ Configurado
+              </button>
+            ) : (
+              <button
+                className="btn-metodo"
+                onClick={() => navigate('/configurar-pregunta')}
+              >
+                Configurar ahora
+              </button>
+            )}
           </div>
         </div>
 
@@ -227,7 +241,7 @@ function Verificaciones() {
             <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
               Ingresa el código de 6 dígitos que te enviamos
             </p>
-            
+
             <input
               type="text"
               placeholder="000000"
@@ -237,9 +251,9 @@ function Verificaciones() {
               className="input-codigo"
               autoFocus
             />
-            
+
             {error && <div className="mensaje-error">{error}</div>}
-            
+
             <div className="modal-buttons">
               <button onClick={verificarCodigoEmail} className="btn-verificar">
                 Verificar Código
@@ -248,9 +262,9 @@ function Verificaciones() {
                 Cancelar
               </button>
             </div>
-            
+
             <p className="reenviar-texto">
-              ¿No recibiste el código? 
+              ¿No recibiste el código?
               <span onClick={enviarCodigoEmail} className="link-reenviar"> Reenviar</span>
             </p>
           </div>
@@ -263,7 +277,7 @@ function Verificaciones() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Verificar Teléfono</h2>
             <p>Ingresa el código de 6 dígitos</p>
-            
+
             {codigoPrueba && (
               <div className="codigo-prueba-box">
                 <p className="codigo-prueba-label">Código de prueba:</p>
@@ -271,7 +285,7 @@ function Verificaciones() {
                 <p className="codigo-prueba-nota">*Solo visible en modo prueba*</p>
               </div>
             )}
-            
+
             <input
               type="text"
               placeholder="000000"
@@ -281,9 +295,9 @@ function Verificaciones() {
               className="input-codigo"
               autoFocus
             />
-            
+
             {error && <div className="mensaje-error">{error}</div>}
-            
+
             <div className="modal-buttons">
               <button onClick={verificarCodigoSMS} className="btn-verificar">
                 Verificar Código
@@ -292,9 +306,9 @@ function Verificaciones() {
                 Cancelar
               </button>
             </div>
-            
+
             <p className="reenviar-texto">
-              ¿No recibiste el código? 
+              ¿No recibiste el código?
               <span onClick={enviarCodigoSMS} className="link-reenviar"> Reenviar</span>
             </p>
           </div>

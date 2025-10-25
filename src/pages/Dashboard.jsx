@@ -71,6 +71,14 @@ function Dashboard() {
                 <span className="status warning">⚠️ No activado</span>
               )}
             </li>
+            <li>
+              ❓ <strong>Pregunta de Seguridad:</strong>{' '}
+              {usuario.pregunta_seguridad ? (
+                <span className="status success">✅ Configurada</span>
+              ) : (
+                <span className="status warning">⚠️ No configurada</span>
+              )}
+            </li>
           </ul>
         </div>
 

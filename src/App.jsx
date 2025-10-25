@@ -5,6 +5,7 @@ import Registro from './pages/Registro'
 import Dashboard from './pages/Dashboard'
 import Verificaciones from './pages/Verificaciones'
 import ConfigurarTOTP from './pages/ConfigurarTOTP'
+import ConfigurarPregunta from './pages/ConfigurarPregunta'
 
 function App() {
   return (
@@ -15,7 +16,8 @@ function App() {
         <Route path="/registro" element={<Registro />} />
         <Route path="/verificaciones" element={<Verificaciones />} />
         <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/configurar-totp" element={<ConfigurarTOTP />} />  
+        <Route path="/configurar-totp" element={<ConfigurarTOTP />} /> 
+        <Route path="/configurar-pregunta" element={<ConfigurarPregunta />} /> 
       </Routes>
     </BrowserRouter>
   )
