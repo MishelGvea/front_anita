@@ -8,7 +8,6 @@ function Verificaciones() {
   const [usuario, setUsuario] = useState(null)
   const [metodoActual, setMetodoActual] = useState(null)
   const [codigo, setCodigo] = useState('')
-  const [codigoPrueba, setCodigoPrueba] = useState('')
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
   const [enviando, setEnviando] = useState(false)
@@ -79,10 +78,9 @@ function Verificaciones() {
         usuario_id: usuario.id
       })
       setMensaje(response.data.mensaje)
-      setCodigoPrueba(response.data.codigo_prueba)
       setMetodoActual('sms')
     } catch (err) {
-      setError(err.response?.data?.detail || 'Error al enviar código')
+      setError(err.response?.data?.detail || 'Error al enviar código por SMS')
     } finally {
       setEnviando(false)
     }
@@ -109,7 +107,6 @@ function Verificaciones() {
       setUsuario(usuarioActualizado)
       setMetodoActual(null)
       setCodigo('')
-      setCodigoPrueba('')
     } catch (err) {
       setError(err.response?.data?.detail || 'Error al verificar código')
     }
@@ -130,7 +127,6 @@ function Verificaciones() {
   const cerrarModal = () => {
     setMetodoActual(null)
     setCodigo('')
-    setCodigoPrueba('')
     setError('')
     setMensaje('')
   }
@@ -276,16 +272,26 @@ function Verificaciones() {
         <div className="modal-overlay" onClick={cerrarModal}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Verificar Teléfono</h2>
-            <p>Ingresa el código de 6 dígitos</p>
+        
+             <p>Revisa tu teléfono <strong>{usuario.telefono}</strong></p>
+              <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+                Ingresa el código de 6 dígitos que te enviamos por SMS
+              </p>
 
-            {codigoPrueba && (
-              <div className="codigo-prueba-box">
-                <p className="codigo-prueba-label">Código de prueba:</p>
-                <p className="codigo-prueba-valor">{codigoPrueba}</p>
-                <p className="codigo-prueba-nota">*Solo visible en modo prueba*</p>
+              {codigoPrueba && (
+                <div className="codigo-prueba-box">
+                  <p className="codigo-prueba-label">Código de prueba:</p>
+                  <p className="codigo-prueba-valor">{codigoPrueba}</p>
+                  <p className="codigo-prueba-nota">*Solo visible en modo prueba*</p>
+                </div>
+              )}
+
+              <div className="info-sms">
+                <p className="info-sms-text">
+                  📱 El código puede tardar unos segundos en llegar
+                </p>
               </div>
-            )}
-
+            
             <input
               type="text"
               placeholder="000000"
