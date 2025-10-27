@@ -253,37 +253,25 @@
   text-decoration: underline;
 }
 
-@media (max-width: 768px) {
-  .metodos-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.codigo-prueba-box {
-  background: #fff3cd;
-  border: 2px solid #ffc107;
+/* Estilos para el mensaje informativo de SMS */
+.info-sms {
+  background: #e3f2fd;
+  border: 2px solid #2196f3;
   border-radius: 10px;
-  padding: 15px;
+  padding: 12px;
   margin-bottom: 20px;
   text-align: center;
 }
 
-.codigo-prueba-label {
+.info-sms-text {
   font-size: 0.9rem;
-  color: #856404;
-  margin-bottom: 5px;
+  color: #1565c0;
+  margin: 0;
+  font-weight: 500;
 }
 
-.codigo-prueba-valor {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #856404;
-  letter-spacing: 5px;
-  margin: 10px 0;
-}
-
-.codigo-prueba-nota {
-  font-size: 0.8rem;
-  color: #856404;
-  font-style: italic;
+@media (max-width: 768px) {
+  .metodos-grid {
+    grid-template-columns: 1fr;
+  }
 }
