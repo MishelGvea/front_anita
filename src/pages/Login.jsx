@@ -12,33 +12,150 @@ function Login() {
   const [codigoTOTP, setCodigoTOTP] = useState('')
   const [requiereTOTP, setRequiereTOTP] = useState(false)
   const [esEmail, setEsEmail] = useState(false)
-  const [esPregunta, setEsPregunta] = useState(false) // 🆕 Detectar pregunta de seguridad
+  const [esPregunta, setEsPregunta] = useState(false)
   const [mensajeInfo, setMensajeInfo] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  // Estados de validación
+  const [errores, setErrores] = useState({})
+  const [tocado, setTocado] = useState({})
 
+  // ========== VALIDADORES ==========
+  
+  const validarUsuario = (valor) => {
+    if (!valor) return 'Usuario requerido'
+    if (valor.length < 3) return 'Usuario inválido'
+    return ''
+  }
+
+  const validarContrasena = (valor) => {
+    if (!valor) return 'Contraseña requerida'
+    if (valor.length < 6) return 'Contraseña muy corta'
+    return ''
+  }
+
+  const validarCodigo = (valor) => {
+    if (!valor) return 'Código requerido'
+    if (!esPregunta && valor.length !== 6) return 'Debe tener 6 dígitos'
+    if (esPregunta && valor.trim().length < 2) return 'Respuesta muy corta'
+    return ''
+  }
+
+  const validarCampo = (nombre, valor) => {
+    switch (nombre) {
+      case 'usuario': return validarUsuario(valor)
+      case 'contrasena': return validarContrasena(valor)
+      case 'codigo': return validarCodigo(valor)
+      default: return ''
+    }
+  }
+
+  // ========== HANDLE CHANGE ==========
+  
   const handleChange = (e) => {
+    const { name, value } = e.target
+    
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     })
+    
+    // Validar en tiempo real si ya fue tocado
+    if (tocado[name]) {
+      const errorCampo = validarCampo(name, value)
+      setErrores({
+        ...errores,
+        [name]: errorCampo
+      })
+    }
+    
     setError('')
   }
 
   const handleCodigoChange = (e) => {
-    // Para pregunta de seguridad, permitir texto. Para código, solo números
-    if (esPregunta) {
-      setCodigoTOTP(e.target.value)
-    } else {
-      const valor = e.target.value.replace(/\D/g, '').slice(0, 6)
-      setCodigoTOTP(valor)
+    const valor = esPregunta 
+      ? e.target.value 
+      : e.target.value.replace(/\D/g, '').slice(0, 6)
+    
+    setCodigoTOTP(valor)
+    
+    // Validar en tiempo real si ya fue tocado
+    if (tocado.codigo) {
+      const errorCampo = validarCodigo(valor)
+      setErrores({
+        ...errores,
+        codigo: errorCampo
+      })
     }
+    
     setError('')
   }
 
+  // ========== HANDLE BLUR ==========
+  
+  const handleBlur = (e) => {
+    const { name, value } = e.target
+    
+    setTocado({
+      ...tocado,
+      [name]: true
+    })
+    
+    const errorCampo = validarCampo(name, value)
+    setErrores({
+      ...errores,
+      [name]: errorCampo
+    })
+  }
+
+  const handleCodigoBlur = () => {
+    setTocado({
+      ...tocado,
+      codigo: true
+    })
+    
+    const errorCampo = validarCodigo(codigoTOTP)
+    setErrores({
+      ...errores,
+      codigo: errorCampo
+    })
+  }
+
+  // ========== VALIDAR FORMULARIO ==========
+  
+  const validarFormulario = () => {
+    if (requiereTOTP) {
+      const errorCodigo = validarCodigo(codigoTOTP)
+      if (errorCodigo) {
+        setErrores({ codigo: errorCodigo })
+        setTocado({ codigo: true })
+        return false
+      }
+      return true
+    }
+    
+    const nuevosErrores = {}
+    if (!formData.usuario) nuevosErrores.usuario = 'Usuario requerido'
+    if (!formData.contrasena) nuevosErrores.contrasena = 'Contraseña requerida'
+    
+    setErrores(nuevosErrores)
+    setTocado({ usuario: true, contrasena: true })
+    
+    return Object.keys(nuevosErrores).length === 0
+  }
+
+  // ========== HANDLE SUBMIT ==========
+  
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+
+    if (!validarFormulario()) {
+      setError('Por favor completa todos los campos correctamente')
+      return
+    }
+
     setLoading(true)
 
     try {
@@ -50,45 +167,42 @@ function Login() {
 
       const response = await axios.post('http://localhost:8000/api/auth/login', payload)
       
-      // Verificar si requiere TOTP, Email o Pregunta
       if (response.data.requiere_totp) {
         setRequiereTOTP(true)
         const mensaje = response.data.mensaje || ''
         setMensajeInfo(mensaje)
         
-        // 🆕 Detectar tipo de autenticación
         const mensajeLower = mensaje.toLowerCase()
         
         if (mensaje.startsWith('❓')) {
-          // Es una pregunta de seguridad
           setEsPregunta(true)
           setEsEmail(false)
         } else if (mensajeLower.includes('email') || mensajeLower.includes('correo') || mensajeLower.includes('@')) {
-          // Es verificación por email
           setEsEmail(true)
           setEsPregunta(false)
         } else {
-          // Es TOTP (Google Authenticator)
           setEsEmail(false)
           setEsPregunta(false)
         }
+        
+        // Limpiar validaciones anteriores
+        setErrores({})
+        setTocado({})
         
         setLoading(false)
         return
       }
 
-      // ✅ Login exitoso
       localStorage.setItem('token', response.data.access_token)
       localStorage.setItem('usuario', JSON.stringify(response.data.usuario))
       
       console.log('Login exitoso:', response.data)
       alert(`¡Bienvenido ${response.data.usuario.nombre}!`)
       
-      // Redirigir al dashboard
       navigate('/verificaciones')
       
     } catch (err) {
-      if (err.response && err.response.data && err.response.data.detail) {
+      if (err.response?.data?.detail) {
         setError(err.response.data.detail)
       } else {
         setError('Error al iniciar sesión. Intenta de nuevo.')
@@ -106,15 +220,29 @@ function Login() {
     setEsPregunta(false)
     setMensajeInfo('')
     setError('')
+    setErrores({})
+    setTocado({})
   }
 
-  // 🆕 Función para extraer la pregunta del mensaje
   const obtenerPregunta = () => {
     if (esPregunta && mensajeInfo.startsWith('❓')) {
-      return mensajeInfo.substring(2).trim() // Quitar el emoji y espacios
+      return mensajeInfo.substring(2).trim()
     }
     return mensajeInfo
   }
+
+  // ========== CLASES DE INPUT ==========
+  
+  const getInputClass = (campo) => {
+    if (!tocado[campo]) return ''
+    return errores[campo] ? 'input-error' : 'input-valido'
+  }
+
+  // ========== VERIFICAR SI FORMULARIO ES VÁLIDO ==========
+  
+  const formularioValido = requiereTOTP 
+    ? (esPregunta ? codigoTOTP.trim().length >= 2 : codigoTOTP.length === 6)
+    : (formData.usuario && formData.contrasena && formData.usuario.length >= 3 && formData.contrasena.length >= 6)
 
   return (
     <div className="login-container">
@@ -132,7 +260,6 @@ function Login() {
         </p>
 
         <form onSubmit={handleSubmit}>
-          {/* Campos de usuario y contraseña */}
           {!requiereTOTP && (
             <>
               <div className="form-group">
@@ -142,10 +269,15 @@ function Login() {
                   name="usuario"
                   value={formData.usuario}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Tu nombre de usuario"
+                  className={getInputClass('usuario')}
                   required
                   autoFocus
                 />
+                {tocado.usuario && errores.usuario && (
+                  <span className="error-text">{errores.usuario}</span>
+                )}
               </div>
 
               <div className="form-group">
@@ -155,14 +287,18 @@ function Login() {
                   name="contrasena"
                   value={formData.contrasena}
                   onChange={handleChange}
+                  onBlur={handleBlur}
                   placeholder="Tu contraseña"
+                  className={getInputClass('contrasena')}
                   required
                 />
+                {tocado.contrasena && errores.contrasena && (
+                  <span className="error-text">{errores.contrasena}</span>
+                )}
               </div>
             </>
           )}
 
-          {/* Campo TOTP, Email o Pregunta de Seguridad */}
           {requiereTOTP && (
             <div className={esPregunta ? "pregunta-section" : esEmail ? "email-section" : "totp-section"}>
               <div className={esPregunta ? "pregunta-info" : esEmail ? "email-info" : "totp-info"}>
@@ -183,15 +319,19 @@ function Login() {
                   {esPregunta ? 'Tu respuesta' : 'Código de verificación'}
                 </label>
                 <input
-                  type={esPregunta ? "text" : "text"}
+                  type="text"
                   value={codigoTOTP}
                   onChange={handleCodigoChange}
+                  onBlur={handleCodigoBlur}
                   placeholder={esPregunta ? "Escribe tu respuesta" : "000000"}
-                  maxLength={esPregunta ? undefined : "6"}
-                  className={esPregunta ? "respuesta-input" : "totp-input"}
+                  maxLength={esPregunta ? undefined : 6}
+                  className={`${esPregunta ? "respuesta-input" : "totp-input"} ${getInputClass('codigo')}`}
                   autoFocus
                   required
                 />
+                {tocado.codigo && errores.codigo && (
+                  <span className="error-text">{errores.codigo}</span>
+                )}
                 <small className="help-text">
                   {esPregunta 
                     ? '💡 Ingresa la respuesta que configuraste'
@@ -202,7 +342,6 @@ function Login() {
                 </small>
               </div>
 
-              {/* Ayuda adicional para email */}
               {esEmail && (
                 <div className="email-ayuda">
                   <p className="texto-ayuda">
@@ -211,7 +350,6 @@ function Login() {
                 </div>
               )}
 
-              {/* Ayuda adicional para pregunta */}
               {esPregunta && (
                 <div className="pregunta-ayuda">
                   <p className="texto-ayuda">
@@ -227,7 +365,8 @@ function Login() {
           <button 
             type="submit" 
             className="btn-submit" 
-            disabled={loading || (requiereTOTP && !esPregunta && codigoTOTP.length !== 6)}
+            disabled={loading || !formularioValido}
+            style={{ opacity: (!formularioValido && !loading) ? 0.6 : 1 }}
           >
             {loading 
               ? 'Verificando...' 
@@ -237,7 +376,6 @@ function Login() {
             }
           </button>
 
-          {/* Botón volver */}
           {requiereTOTP && (
             <button 
               type="button" 

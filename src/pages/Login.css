@@ -48,13 +48,50 @@
   border: 2px solid #e0e0e0;
   border-radius: 8px;
   font-size: 1rem;
-  transition: border-color 0.3s;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
 }
 
 .form-group input:focus {
   outline: none;
   border-color: #667eea;
 }
+
+/* ========== ESTILOS DE VALIDACIÓN ========== */
+
+.input-error {
+  border: 2px solid #ef4444 !important;
+  background-color: #fef2f2;
+}
+
+.input-valido {
+  border: 2px solid #10b981 !important;
+  background-color: #f0fdf4;
+}
+
+.error-text {
+  display: block;
+  color: #ef4444;
+  font-size: 12px;
+  margin-top: 4px;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+/* ========== ANIMACIONES ========== */
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========== MENSAJES ========== */
 
 .error-message {
   background: #fee;
@@ -64,7 +101,10 @@
   margin-bottom: 15px;
   text-align: center;
   font-size: 0.9rem;
+  animation: slideIn 0.3s ease;
 }
+
+/* ========== BOTONES ========== */
 
 .btn-submit {
   width: 100%;
@@ -89,7 +129,100 @@
 .btn-submit:disabled {
   background: #ccc;
   cursor: not-allowed;
+  opacity: 0.6;
 }
+
+.btn-back {
+  width: 100%;
+  padding: 12px;
+  background: transparent;
+  color: #667eea;
+  border: 2px solid #667eea;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+}
+
+.btn-back:hover {
+  background: #667eea;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* ========== SECCIONES TOTP/EMAIL/PREGUNTA ========== */
+
+.totp-section,
+.email-section,
+.pregunta-section {
+  margin-bottom: 20px;
+}
+
+.totp-info,
+.email-info,
+.pregunta-info {
+  background: #f0f4ff;
+  padding: 15px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.totp-icon {
+  font-size: 1.5rem;
+}
+
+.totp-info p,
+.email-info p,
+.pregunta-info p {
+  margin: 0;
+  color: #333;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.totp-input,
+.respuesta-input {
+  text-align: center;
+  font-size: 1.5rem;
+  letter-spacing: 0.5rem;
+  font-weight: 600;
+}
+
+.respuesta-input {
+  text-align: left;
+  font-size: 1rem;
+  letter-spacing: normal;
+}
+
+.help-text {
+  display: block;
+  color: #666;
+  font-size: 0.85rem;
+  margin-top: 8px;
+  text-align: center;
+}
+
+.email-ayuda,
+.pregunta-ayuda {
+  background: #fff9e6;
+  padding: 10px;
+  border-radius: 8px;
+  margin-top: 15px;
+  border-left: 4px solid #f59e0b;
+}
+
+.texto-ayuda {
+  margin: 0;
+  color: #333;
+  font-size: 0.85rem;
+}
+
+/* ========== FOOTER ========== */
 
 .footer-links {
   margin-top: 25px;
@@ -106,14 +239,26 @@
   color: #667eea;
   cursor: pointer;
   font-weight: 600;
+  transition: color 0.3s ease;
 }
 
 .link:hover {
   text-decoration: underline;
+  color: #764ba2;
 }
+
+/* ========== RESPONSIVE ========== */
 
 @media (max-width: 600px) {
   .login-card {
     padding: 40px 30px;
+  }
+  
+  .login-card h1 {
+    font-size: 1.5rem;
+  }
+  
+  .totp-input {
+    letter-spacing: 0.3rem;
   }
 }
