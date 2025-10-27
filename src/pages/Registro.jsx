@@ -15,14 +15,13 @@ function Registro() {
     telefono: ''
   })
   
-  // Estados de validación
   const [errores, setErrores] = useState({})
   const [tocado, setTocado] = useState({})
   const [fuerzaContrasena, setFuerzaContrasena] = useState({ nivel: 0, texto: '', color: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  // ========== VALIDADORES ==========
+  // ========== VALIDADORES (SINCRONIZADOS CON BACKEND) ==========
   
   const validarUsuario = (valor) => {
     if (!valor) return 'Usuario requerido'
@@ -65,25 +64,40 @@ function Registro() {
     
     let fuerza = 0
     
-    // Criterios de fuerza
+    // Criterios actualizados
     if (valor.length >= 8) fuerza++
     if (valor.length >= 12) fuerza++
     if (/[a-z]/.test(valor)) fuerza++
     if (/[A-Z]/.test(valor)) fuerza++
     if (/[0-9]/.test(valor)) fuerza++
-    if (/[^a-zA-Z0-9]/.test(valor)) fuerza++
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(valor)) fuerza++ // Símbolos especiales
     
-    if (fuerza <= 2) return { nivel: 1, texto: 'Débil', color: '#ef4444' }
-    if (fuerza <= 4) return { nivel: 2, texto: 'Media', color: '#f59e0b' }
+    if (fuerza <= 3) return { nivel: 1, texto: 'Débil', color: '#ef4444' }
+    if (fuerza <= 5) return { nivel: 2, texto: 'Media', color: '#f59e0b' }
     return { nivel: 3, texto: 'Fuerte', color: '#10b981' }
   }
 
+  // ✅ VALIDACIÓN SINCRONIZADA CON BACKEND
   const validarContrasena = (valor) => {
     if (!valor) return 'Contraseña requerida'
-    if (valor.length < 6) return 'Mínimo 6 caracteres'
+    
+    // Mínimo 8 caracteres (igual que backend)
+    if (valor.length < 8) return 'Mínimo 8 caracteres'
+    
+    // Debe incluir mayúscula
     if (!/[A-Z]/.test(valor)) return 'Debe incluir al menos una mayúscula'
+    
+    // Debe incluir minúscula
     if (!/[a-z]/.test(valor)) return 'Debe incluir al menos una minúscula'
+    
+    // Debe incluir número
     if (!/[0-9]/.test(valor)) return 'Debe incluir al menos un número'
+    
+    // Debe incluir símbolo especial (NUEVO - igual que backend)
+    if (!/[!@#$%^&*(),.?":{}|<>]/.test(valor)) {
+      return 'Debe incluir al menos un símbolo especial (!@#$%...)'
+    }
+    
     return ''
   }
 
@@ -113,7 +127,6 @@ function Registro() {
   const handleChange = (e) => {
     const { name, value } = e.target
     
-    // Formateo especial para teléfono
     let valorFinal = value
     if (name === 'telefono') {
       valorFinal = value.replace(/\D/g, '').slice(0, 10)
@@ -124,7 +137,6 @@ function Registro() {
       [name]: valorFinal
     })
     
-    // Validar en tiempo real si el campo ya fue tocado
     if (tocado[name]) {
       const errorCampo = validarCampo(name, valorFinal)
       setErrores({
@@ -133,12 +145,10 @@ function Registro() {
       })
     }
     
-    // Calcular fuerza de contraseña
     if (name === 'contrasena') {
       setFuerzaContrasena(calcularFuerzaContrasena(valorFinal))
     }
     
-    // Revalidar confirmación si cambia la contraseña
     if (name === 'contrasena' && formData.confirmarContrasena && tocado.confirmarContrasena) {
       const errorConfirmacion = formData.confirmarContrasena !== valorFinal 
         ? 'Las contraseñas no coinciden' 
@@ -350,12 +360,33 @@ function Registro() {
                 value={formData.contrasena}
                 onChange={handleChange}
                 onBlur={handleBlur}
-                placeholder="Mínimo 6 caracteres"
+                placeholder="Mínimo 8 caracteres con símbolos"
                 className={getInputClass('contrasena')}
                 required
               />
               {tocado.contrasena && errores.contrasena && (
                 <span className="error-text">{errores.contrasena}</span>
+              )}
+              
+              {/* Requisitos de contraseña */}
+              {tocado.contrasena && (
+                <div className="password-requirements">
+                  <small style={{ color: formData.contrasena.length >= 8 ? '#10b981' : '#6b7280' }}>
+                    {formData.contrasena.length >= 8 ? '✓' : '○'} Mínimo 8 caracteres
+                  </small>
+                  <small style={{ color: /[A-Z]/.test(formData.contrasena) ? '#10b981' : '#6b7280' }}>
+                    {/[A-Z]/.test(formData.contrasena) ? '✓' : '○'} Una mayúscula
+                  </small>
+                  <small style={{ color: /[a-z]/.test(formData.contrasena) ? '#10b981' : '#6b7280' }}>
+                    {/[a-z]/.test(formData.contrasena) ? '✓' : '○'} Una minúscula
+                  </small>
+                  <small style={{ color: /[0-9]/.test(formData.contrasena) ? '#10b981' : '#6b7280' }}>
+                    {/[0-9]/.test(formData.contrasena) ? '✓' : '○'} Un número
+                  </small>
+                  <small style={{ color: /[!@#$%^&*(),.?":{}|<>]/.test(formData.contrasena) ? '#10b981' : '#6b7280' }}>
+                    {/[!@#$%^&*(),.?":{}|<>]/.test(formData.contrasena) ? '✓' : '○'} Un símbolo (!@#$...)
+                  </small>
+                </div>
               )}
               
               {formData.contrasena && !errores.contrasena && (
