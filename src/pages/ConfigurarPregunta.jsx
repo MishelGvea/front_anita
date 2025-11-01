@@ -18,7 +18,6 @@ function ConfigurarPregunta() {
   const [errores, setErrores] = useState({})
   const [tocado, setTocado] = useState({})
 
-  const API_URL = 'http://127.0.0.1:8000'
 
   const preguntasSugeridas = [
     "¿Cuál es el nombre de tu primera mascota?",
@@ -232,7 +231,7 @@ function ConfigurarPregunta() {
     setGuardando(true)
 
     try {
-      await axios.post(`${API_URL}/api/verificacion/configurar-pregunta`, {
+      await axios.post(`${import.meta.env.VITE_URL}/api/verificacion/configurar-pregunta`, {
         usuario_id: usuario.id,
         pregunta: preguntaFinal,
         respuesta: respuesta

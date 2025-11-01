@@ -220,7 +220,10 @@ function Registro() {
     try {
       const { confirmarContrasena: _, ...dataToSend } = formData
       
-      const response = await axios.post('http://127.0.0.1:8000/api/auth/registro', dataToSend)
+      const response = await axios.post(
+        `${import.meta.env.VITE_URL}/api/auth/registro`, 
+        dataToSend
+      )
       
       localStorage.setItem('usuario', JSON.stringify(response.data))
       

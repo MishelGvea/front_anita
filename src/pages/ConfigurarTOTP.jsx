@@ -14,7 +14,6 @@ const ConfigurarTOTP = () => {
   const [cargando, setCargando] = useState(false);
   const [totpHabilitado, setTotpHabilitado] = useState(false);
 
-  const API_URL = 'http://127.0.0.1:8000';
 
   useEffect(() => {
     // Verificar si hay usuario logueado
@@ -32,7 +31,7 @@ const ConfigurarTOTP = () => {
   // ✅ Verificar si el TOTP está activado
   const verificarEstadoTOTP = async (email) => {
     try {
-      const response = await axios.get(`${API_URL}/api/totp/estado/${email}`);
+      const response = await axios.get(`${import.meta.env.VITE_URL}/api/totp/estado/${email}`);
       setTotpHabilitado(response.data.totp_habilitado);
     } catch (err) {
       console.error('Error al verificar estado TOTP:', err);
@@ -45,7 +44,7 @@ const ConfigurarTOTP = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_URL}/api/totp/habilitar`, {
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/totp/habilitar`, {
         email: usuario.email
       });
 
@@ -67,7 +66,7 @@ const ConfigurarTOTP = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_URL}/api/totp/verificar`, {
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/totp/verificar`, {
         email: usuario.email,
         codigo: codigo
       });
@@ -100,7 +99,7 @@ const ConfigurarTOTP = () => {
     setError('');
 
     try {
-      const response = await axios.post(`${API_URL}/api/totp/deshabilitar`, {
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/totp/deshabilitar`, {
         email: usuario.email,
         codigo: codigoDesactivar
       });

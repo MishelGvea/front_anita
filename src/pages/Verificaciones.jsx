@@ -11,7 +11,6 @@ function Verificaciones() {
   const [mensaje, setMensaje] = useState('')
   const [error, setError] = useState('')
   const [enviando, setEnviando] = useState(false)
-  const API_URL = 'http://127.0.0.1:8000'
 
   useEffect(() => {
     const usuarioData = localStorage.getItem('usuario')
@@ -29,7 +28,7 @@ function Verificaciones() {
     setEnviando(true)
 
     try {
-      const response = await axios.post(`${API_URL}/api/verificacion/enviar-codigo-email`, {
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/verificacion/enviar-codigo-email`, {
         usuario_id: usuario.id
       })
       setMensaje(response.data.mensaje)
@@ -51,7 +50,7 @@ function Verificaciones() {
     setMensaje('')
 
     try {
-      await axios.post(`${API_URL}/api/verificacion/verificar-codigo-email`, {
+      await axios.post(`${import.meta.env.VITE_URL}/api/verificacion/verificar-codigo-email`, {
         usuario_id: usuario.id,
         codigo: codigo
       })
@@ -74,7 +73,7 @@ function Verificaciones() {
     setEnviando(true)
 
     try {
-      const response = await axios.post(`${API_URL}/api/verificacion/enviar-codigo-sms`, {
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/verificacion/enviar-codigo-sms`, {
         usuario_id: usuario.id
       })
       setMensaje(response.data.mensaje)
@@ -96,7 +95,7 @@ function Verificaciones() {
     setMensaje('')
 
     try {
-      await axios.post(`${API_URL}/api/verificacion/verificar-codigo-sms`, {
+      await axios.post(`${import.meta.env.VITE_URL}/api/verificacion/verificar-codigo-sms`, {
         usuario_id: usuario.id,
         codigo: codigo
       })
@@ -273,25 +272,17 @@ function Verificaciones() {
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
             <h2>Verificar Teléfono</h2>
         
-             <p>Revisa tu teléfono <strong>{usuario.telefono}</strong></p>
-              <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
-                Ingresa el código de 6 dígitos que te enviamos por SMS
+            <p>Revisa tu teléfono <strong>{usuario.telefono}</strong></p>
+            <p style={{ fontSize: '14px', color: '#666', marginTop: '10px' }}>
+              Ingresa el código de 6 dígitos que te enviamos por SMS
+            </p>
+
+            <div className="info-sms">
+              <p className="info-sms-text">
+                📱 El código puede tardar unos segundos en llegar
               </p>
-
-              {codigoPrueba && (
-                <div className="codigo-prueba-box">
-                  <p className="codigo-prueba-label">Código de prueba:</p>
-                  <p className="codigo-prueba-valor">{codigoPrueba}</p>
-                  <p className="codigo-prueba-nota">*Solo visible en modo prueba*</p>
-                </div>
-              )}
-
-              <div className="info-sms">
-                <p className="info-sms-text">
-                  📱 El código puede tardar unos segundos en llegar
-                </p>
-              </div>
-            
+            </div>
+          
             <input
               type="text"
               placeholder="000000"

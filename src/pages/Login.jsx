@@ -165,7 +165,7 @@ function Login() {
         codigo_totp: codigoTOTP || null
       }
 
-      const response = await axios.post('http://localhost:8000/api/auth/login', payload)
+      const response = await axios.post(`${import.meta.env.VITE_URL}/api/auth/login`, payload)
       
       if (response.data.requiere_totp) {
         setRequiereTOTP(true)
